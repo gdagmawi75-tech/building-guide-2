@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { adminApiRequest } from '../../api/adminApi';
+import {
+  getPublicAppOrigin,
+  toPublicAppUrl
+} from '../../utils/publicAppUrl';
 
 const LOCATION_TYPES = [
   {
@@ -92,22 +96,23 @@ function QRCodesPage() {
   function getVisitorUrl() {
     const path =
       getVisitorPath();
+    const origin =
+      getPublicAppOrigin();
 
-    if (!path) {
+    if (!path || !origin) {
       return '';
     }
 
-    return (
-      window.location.origin +
-      path
-    );
+    return origin + path;
   }
 
   function buildQRCodeUrl(existingValue = '') {
     const path =
       getVisitorPath();
+    const origin =
+      getPublicAppOrigin();
 
-    if (!path) {
+    if (!path || !origin) {
       return '';
     }
 
@@ -118,7 +123,7 @@ function QRCodesPage() {
         const existingUrl =
           new URL(
             existingValue,
-            window.location.origin
+            origin
           );
 
         token =
@@ -136,7 +141,7 @@ function QRCodesPage() {
     }
 
     return (
-      window.location.origin +
+      origin +
       path +
       `?qr=${encodeURIComponent(token)}`
     );
@@ -172,7 +177,9 @@ function QRCodesPage() {
         try {
           const image =
             await QRCode.toDataURL(
-              qrCode.qr_code,
+              toPublicAppUrl(
+                qrCode.qr_code
+              ),
               {
                 width: 220,
                 margin: 2,
@@ -638,7 +645,7 @@ function QRCodesPage() {
                 />
 
                 <p className="mt-1 text-xs text-slate-500">
-                  This URL is automatically encoded into the QR code.
+                  Encoded into the QR code. Set VITE_PUBLIC_APP_URL to your Vercel URL so scans always open production.
                 </p>
               </div>
 
@@ -875,7 +882,9 @@ function QRCodesPage() {
                           QR URL:
                         </span>{' '}
                         <span className="break-all text-slate-500">
-                          {qrCode.qr_code}
+                          {toPublicAppUrl(
+                            qrCode.qr_code
+                          )}
                         </span>
                       </p>
 
